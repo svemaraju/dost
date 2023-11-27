@@ -1,4 +1,4 @@
-package argutils
+package internal
 
 import (
 	"flag"
