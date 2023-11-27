@@ -6,13 +6,13 @@ import (
     "fmt"
     "math/big"
     "github.com/atotto/clipboard"
-    "flag"
+    "github.com/svemaraju/dost/internal"
 )
 
 
 // writeToClipboard writes a given text to clipboard
 func writeToClipboard(text string) error {
-	return clipboard.WriteAll(text)
+    return clipboard.WriteAll(text)
 }
 
 
@@ -45,12 +45,10 @@ func generatePassword(length int) (string, error) {
 
 
 func main() {
-	// Specify the desired password length
-	passwordLength := flag.Int("length", 12, "length of your password")
-	flag.Parse()
+    args := argutils.ReadArgs()
 
 	// Generate and print the password
-	password, err1 := generatePassword(*passwordLength)
+	password, err1 := generatePassword(args.PasswordLength)
 	if err1 != nil {
 		fmt.Println("Error generating password:", err1)
 		return
