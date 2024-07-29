@@ -1,29 +1,38 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"os"
-    "fmt"
-    "github.com/svemaraju/dost/internal"
+
+	"github.com/svemaraju/dost/internal"
 )
 
+var (
+	noSymbols       bool
+	copyToClipBoard bool = true
+)
 
 func main() {
-    args := internal.ReadArgs()
+	generateCmd := flag.NewFlagSet("generate", flag.ExitOnError)
+	generateCmd.BoolVar(&noSymbols, "n", false, "Skip symbols while generating password")
+	generateCmd.BoolVar(&copyToClipBoard, "c", false, "Copy to clipboard.")
+	flag.Parse()
 
-	// Generate and print the password
-	password, err1 := internal.GeneratePassword(args.PasswordLength)
-	if err1 != nil {
-		fmt.Println("Error generating password:", err1)
-		return
+	switch os.Args[1] {
+	case "generate":
+		password, err := internal.Generate(generateCmd, noSymbols)
+		if err == nil {
+			if copyToClipBoard {
+				err2 := internal.WriteToClipboard(password)
+				if err2 != nil {
+					fmt.Println("Error writing to clipboard:", err2)
+					os.Exit(1)
+				}
+				fmt.Println("Copied to clipboard! ✅")
+			} else {
+				fmt.Println("Generated Password:", password)
+			}
+		}
 	}
-
-	fmt.Println("Generated Password:", password)
-
-	err2 := internal.WriteToClipboard(password)
-	if err2 != nil {
-		fmt.Println("Error writing to clipboard:", err2)
-		os.Exit(1)
-	}
-
-	fmt.Println("Copied to clipboard! ✅")
 }
