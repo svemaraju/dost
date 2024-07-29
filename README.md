@@ -41,9 +41,9 @@ Generated Password: E2UST}^{Ac[Fb&D|cD%;Eij>H
 ```
 
 ### Under development
-- Insert new password manually
-- Show existing password
-- View all entries
+- Insert a new password manually
+- Show an existing password
+- List all entries
 - Password storage 
 - GPG Key based encryption
 

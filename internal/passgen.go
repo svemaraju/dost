@@ -3,11 +3,23 @@ package internal
 import (
 	"crypto/rand"
 	"flag"
+	"fmt"
 	"log"
 	"math/big"
 	"os"
 	"strconv"
+
+	"github.com/atotto/clipboard"
 )
+
+var (
+	noSymbols       bool
+	copyToClipBoard bool = true
+)
+
+func writeToClipboard(text string) error {
+	return clipboard.WriteAll(text)
+}
 
 // generatePassword returns a random password of the specified length
 func generatePassword(length int, noSymbols bool) (string, error) {
@@ -40,7 +52,9 @@ func generatePassword(length int, noSymbols bool) (string, error) {
 	return password, nil
 }
 
-func Generate(generateFlags *flag.FlagSet, noSymbols bool) (string, error) {
+func Generate(generateFlags *flag.FlagSet) {
+	generateFlags.BoolVar(&noSymbols, "n", false, "Skip symbols while generating password")
+	generateFlags.BoolVar(&copyToClipBoard, "c", false, "Copy to clipboard.")
 	generateFlags.Parse(os.Args[2:])
 	passwordLength := 25
 	genArgs := generateFlags.Args()
@@ -58,8 +72,19 @@ func Generate(generateFlags *flag.FlagSet, noSymbols bool) (string, error) {
 	password, err1 := generatePassword(passwordLength, noSymbols)
 	if err1 != nil {
 		log.Println("Error generating password:", err1)
-		return password, err1
 	}
 
-	return password, nil
+	if err1 == nil {
+		if copyToClipBoard {
+			err2 := writeToClipboard(password)
+			if err2 != nil {
+				log.Println("Error writing to clipboard:", err2)
+				os.Exit(1)
+			}
+			fmt.Println("Copied to clipboard! ✅")
+		} else {
+			fmt.Println("Generated Password:", password)
+		}
+	}
+
 }
