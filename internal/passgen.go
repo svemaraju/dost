@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	mrand "math/rand"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/atotto/clipboard"
 )
@@ -17,27 +20,62 @@ var (
 	copyToClipBoard bool = true
 )
 
+const (
+	uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	lowercaseLetters = "abcdefghijklmnopqrstuvwxyz"
+	digits           = "0123456789"
+	specialChars     = "!@#$%^&*()-_=+[]{}|;:'\",.<>/?"
+)
+
 func writeToClipboard(text string) error {
 	return clipboard.WriteAll(text)
 }
 
+
+func shuffle(password [] string) []string {
+	mr := mrand.New(mrand.NewSource(time.Now().UnixNano()))
+	mr.Shuffle(len(password), func(i, j int) { 
+		password[i], password[j] = password[j], password[i]
+	})
+	return password
+}
+
+// selectRandomCharacter picks a random element from slice of strings
+func selectRandomCharacter(characterSet string) string {
+	numOfCharacters := len(characterSet)
+	randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(numOfCharacters)))
+	if err != nil {
+		panic(err)
+	}
+	return string(characterSet[randomIndex.Int64()])
+}
+
 // generatePassword returns a random password of the specified length
 func generatePassword(length int, noSymbols bool) (string, error) {
-	const (
-		uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		lowercaseLetters = "abcdefghijklmnopqrstuvwxyz"
-		digits           = "0123456789"
-		specialChars     = "!@#$%^&*()-_=+[]{}|;:'\",.<>/?"
-	)
-
 	// Combine all characters for password generation
 	allChars := uppercaseLetters + lowercaseLetters + digits
 
+	var password []string
+
+	mandatoryUppercaseChar := selectRandomCharacter(uppercaseLetters)
+	password = append(password, mandatoryUppercaseChar)
+
+	mandatoryLowercaseChar := selectRandomCharacter(lowercaseLetters)
+	password = append(password, mandatoryLowercaseChar)
+
+	mandatorydigit := selectRandomCharacter(digits)
+	password = append(password, mandatorydigit)
+
 	if !noSymbols {
 		allChars += specialChars
+
+		mandatorySpecialChar := selectRandomCharacter(specialChars)
+		password = append(password, mandatorySpecialChar)
+
 	}
 
-	var password string
+	length -= len(password)
+
 	for i := 0; i < length; i++ {
 		// Generate a random index to select a character from allChars
 		randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(allChars))))
@@ -46,10 +84,15 @@ func generatePassword(length int, noSymbols bool) (string, error) {
 		}
 
 		// Append the randomly selected character to the password
-		password += string(allChars[randomIndex.Int64()])
+		password = append(password, string(allChars[randomIndex.Int64()]))
 	}
 
-	return password, nil
+	fmt.Println(password)
+
+	password = shuffle(password)
+	passwordString := strings.Join(password, "")
+
+	return passwordString, nil
 }
 
 func Generate(generateFlags *flag.FlagSet) {
