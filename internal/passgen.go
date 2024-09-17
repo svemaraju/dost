@@ -32,7 +32,7 @@ func writeToClipboard(text string) error {
 }
 
 
-func shuffle(password [] string) []string {
+func shuffle(password []string) []string {
 	mr := mrand.New(mrand.NewSource(time.Now().UnixNano()))
 	mr.Shuffle(len(password), func(i, j int) { 
 		password[i], password[j] = password[j], password[i]
@@ -87,15 +87,13 @@ func generatePassword(length int, noSymbols bool) (string, error) {
 		password = append(password, string(allChars[randomIndex.Int64()]))
 	}
 
-	fmt.Println(password)
-
 	password = shuffle(password)
 	passwordString := strings.Join(password, "")
 
 	return passwordString, nil
 }
 
-func Generate(generateFlags *flag.FlagSet) {
+func Generate(generateFlags *flag.FlagSet) (string, string) {
 	generateFlags.BoolVar(&noSymbols, "n", false, "Skip symbols while generating password")
 	generateFlags.BoolVar(&copyToClipBoard, "c", false, "Copy to clipboard.")
 	generateFlags.Parse(os.Args[2:])
@@ -109,7 +107,11 @@ func Generate(generateFlags *flag.FlagSet) {
 			os.Exit(0)
 		}
 		passwordLength = length
+	} else if len(genArgs) == 0 {
+		log.Fatal("Usage: dost generate [-n] [-c] passwordName [passwordLength]")
 	}
+
+	passwordName := genArgs[0]
 
 	// Generate and print the password
 	password, err1 := generatePassword(passwordLength, noSymbols)
@@ -129,5 +131,7 @@ func Generate(generateFlags *flag.FlagSet) {
 			fmt.Println("Generated Password:", password)
 		}
 	}
+
+	return password, passwordName
 
 }
