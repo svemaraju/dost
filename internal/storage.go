@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -34,10 +35,17 @@ func (s *Storage) Add(password, identifier string) error {
 	}
     // write the password to the file
 	absPath := filepath.Join(s.path, identifier)
-	if err2 := os.WriteFile(absPath, []byte(password), 0600); err2 != nil {
-        log.Println("Error writing file:", err2)
-		return err2
+	_, err2 := os.Stat(absPath)
+	if os.IsNotExist(err2) {
+		if err2 := os.WriteFile(absPath, []byte(password), 0600); err2 != nil {
+			log.Println("Error writing file:", err2)
+			return err2
+		}
+	} else {
+		return fmt.Errorf("Storage.Add: identifier %s already in use, please use delete before add or use update", 
+		identifier)
 	}
+	
 	return nil
 
 }

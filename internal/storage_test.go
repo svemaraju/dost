@@ -65,3 +65,69 @@ func TestStorageAddShow(t *testing.T) {
 
 
 }
+
+
+// TestAddDuplicate verifies adding a new password with existing identifier should raise an error
+func TestAddDuplicate(t *testing.T) {
+	// random path for testing purpose
+	path := getRandomPath()
+	// clean up later
+	defer cleanUpPath(path)
+
+	storage := GetStorage(path)
+	storage.Init()
+
+	identifier := "email/sri@example.com"
+	password := "someRandomPassword"
+
+	addErr1 := storage.Add(password, identifier)
+	
+	if addErr1 != nil {
+		t.Errorf("Did not expect an error when calling storage.Add: \n%v", addErr1)
+	}
+
+	// try saving the new password with same identifier
+	addErr2 := storage.Add("someNewRandomPassword", identifier)
+
+	if addErr2 == nil {
+		t.Errorf("Error should have been raised when add new password to existing indetifier.")
+	}
+}
+
+// TestShowNonExisting - should raise error
+func TestShowNonExisting(t *testing.T) {
+	// random path for testing purpose
+	path := getRandomPath()
+	// clean up later
+	defer cleanUpPath(path)
+
+	storage := GetStorage(path)
+	storage.Init()
+
+	_, err := storage.Show("someNonExisting/Identifier@email.com")
+
+	if err == nil {
+		t.Errorf("Error should have been raised when non-existing identifier is being requested to be shown")
+	}
+
+}
+
+// TestEmptyIdentifier
+func TestEmptyIdentifier(t *testing.T) {
+	// random path for testing purpose
+	path := getRandomPath()
+	// clean up later
+	defer cleanUpPath(path)
+
+	storage := GetStorage(path)
+	storage.Init()
+
+	identifier := ""
+	password := "someRandomPassword"
+
+	err := storage.Add(password, identifier)
+
+	if err == nil {
+		t.Errorf("Error should have been raised when identifier is empty string.")
+	}
+}
