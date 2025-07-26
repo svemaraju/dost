@@ -1,29 +1,21 @@
 package internal
 
 import (
-	"fmt"
-	"math/rand"
-	"os"
-	"strconv"
 	"testing"
+	"path/filepath"
 )
 
-func getRandomPath() string {
-	path := os.Getenv("HOME") + "/.dost-" + strconv.Itoa(rand.Intn(500))
-	fmt.Printf("--- [Test path for dost: %s]\n", path)
+func getRandomPath(t *testing.T) string {
+	t.Helper()
+	// create a temp directory that will be cleaned up
+	tmpParent := t.TempDir()
+	path := filepath.Join(tmpParent, "dost")
 	return path
 }
 
-func cleanUpPath(path string) {
-	os.RemoveAll(path)
-}
-
+// TestStorageInitReady verifies that the storage initialization creates the required directory.
 func TestStorageInitReady(t *testing.T) {
-	// random path for testing purpose
-	path := getRandomPath()
-	// clean up later
-	defer cleanUpPath(path)
-
+	path := getRandomPath(t)
 	storage := GetStorage(path)
 
 	storage.Init()
@@ -35,10 +27,7 @@ func TestStorageInitReady(t *testing.T) {
 }
 
 func TestStorageAddShow(t *testing.T) {
-	// random path for testing purpose
-	path := getRandomPath()
-	// clean up later
-	defer cleanUpPath(path)
+	path := getRandomPath(t)
 
 	storage := GetStorage(path)
 	storage.Init()
@@ -59,7 +48,7 @@ func TestStorageAddShow(t *testing.T) {
 	}
 
 	if passwordFromFile != password {
-		t.Errorf("Password that was added did not match the one from the one that got saved\npassword: %s, passwordFromFile: %s", 
+		t.Errorf("Password that was added did not match the one from the one that got saved\npassword: %s, passwordFromFile: %s",
 				password, passwordFromFile)
 	}
 
@@ -69,10 +58,7 @@ func TestStorageAddShow(t *testing.T) {
 
 // TestAddDuplicate verifies adding a new password with existing identifier should raise an error
 func TestAddDuplicate(t *testing.T) {
-	// random path for testing purpose
-	path := getRandomPath()
-	// clean up later
-	defer cleanUpPath(path)
+	path := getRandomPath(t)
 
 	storage := GetStorage(path)
 	storage.Init()
@@ -81,7 +67,7 @@ func TestAddDuplicate(t *testing.T) {
 	password := "someRandomPassword"
 
 	addErr1 := storage.Add(password, identifier)
-	
+
 	if addErr1 != nil {
 		t.Errorf("Did not expect an error when calling storage.Add: \n%v", addErr1)
 	}
@@ -96,10 +82,7 @@ func TestAddDuplicate(t *testing.T) {
 
 // TestShowNonExisting - should raise error
 func TestShowNonExisting(t *testing.T) {
-	// random path for testing purpose
-	path := getRandomPath()
-	// clean up later
-	defer cleanUpPath(path)
+	path := getRandomPath(t)
 
 	storage := GetStorage(path)
 	storage.Init()
@@ -114,10 +97,7 @@ func TestShowNonExisting(t *testing.T) {
 
 // TestEmptyIdentifier
 func TestEmptyIdentifier(t *testing.T) {
-	// random path for testing purpose
-	path := getRandomPath()
-	// clean up later
-	defer cleanUpPath(path)
+	path := getRandomPath(t)
 
 	storage := GetStorage(path)
 	storage.Init()
